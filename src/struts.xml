@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.3//EN"
+        "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+<struts>
+    <package name="default" namespace="/" extends="struts-default">
+
+        <!--拦截器-->
+        <interceptors>
+            <interceptor name="security" class="notes.interceptor.AuthenInterceptor"/>
+            <interceptor-stack name="auth">
+                <interceptor-ref name="defaultStack"/>
+                <interceptor-ref name="security"/>
+            </interceptor-stack>
+        </interceptors>
+
+        <!--配置全局result-->
+        <global-results>
+            <result name="login">login.jsp</result>
+        </global-results>
+
+        <!--配置login.action,对应LoginAction的execute方法，成功后重定向到listNotes.action-->
+        <action name="login" class="notes.action.LoginAction" method="login">
+            <result name="success" type="redirectAction">listNotes</result>
+            <result name="input">login.jsp</result>
+        </action>
+        
+        <!--配置logout.action,对应LoginAction的logout方法-->
+        <action name="logout" class="notes.action.LoginAction" method="logout"/>
+
+        <!--配置reg.action,对应RegAction的execute方法-->
+        <action name="reg" class="notes.action.RegAction">
+            <result name="success">login.jsp</result>
+            <result name="input">reg.jsp</result>
+        </action>
+
+        <!--配置listNotes.action,对应NotesAction的list方法-->
+        <action name="listNotes" class="notes.action.NoteShowAction" method="list">
+            <result name="success">index.jsp</result>
+            <interceptor-ref name="auth"/>
+        </action>
+        
+        <!--配置addNote.action，对应NotesAction对应的add方法-->
+        <action name="addNote" class="notes.action.NoteCtrlAction" method="add">
+            <result name="success" type="redirectAction">listNotes</result>
+            <result name="input">post.jsp</result>
+            <param name="uploadDir">uploadFiles</param>
+            <interceptor-ref name="auth"/>
+        </action>
+
+        <!--配置deleteNote.action,对应NoteCtrlAction的delete方法-->
+        <action name="deleteNote" class="notes.action.NoteCtrlAction" method="delete">
+            <result name="success" type="redirectAction">listNotes</result>
+            <interceptor-ref name="auth"/>
+        </action>
+
+        <action name="download" class="notes.action.FileDownloadAction">
+            <param name="downloadDir">uploadFiles</param>
+            <result name="success" type="stream">
+                <param name="contentDisposition">
+                    attachment;filename="${downloadFileName}"
+                </param>
+                <param name="bufferSize">4096</param>
+            </result>
+        </action>
+
+        <action name="addReply" class="notes.action.ReplyAction" method="addReply">
+            <result name="success" type="redirectAction">detail?noteId=%{noteId}</result>
+            <result name="input" type="redirectAction">detail?noteId=%{noteId}</result>
+            <interceptor-ref name="auth"/>
+        </action>
+
+        <action name="deleteReply" class="notes.action.ReplyAction" method="delete">
+            <result name="success" type="redirectAction">detail?noteId=%{noteId}</result>
+            <interceptor-ref name="auth"/>
+        </action>
+
+        <!--配置detail.action，对应NotesAction的detail方法-->
+        <action name="detail" class="notes.action.NoteShowAction" method="detail">
+            <result name="success">detail.jsp</result>
+            <interceptor-ref name="auth"/>
+        </action>
+
+    </package>
+</struts>
